@@ -1,2 +1,0 @@
-[workspace]
-members = ["daily-temperatures", "rotate-list", "wiggle-sort-ii"]
