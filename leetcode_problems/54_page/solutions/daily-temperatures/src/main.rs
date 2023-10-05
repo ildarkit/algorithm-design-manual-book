@@ -20,6 +20,9 @@ impl Solution {
                         break;
                     }
                     i += c;
+                    while answer[i] > 0 {
+                        i += 1;
+                    }
                 }
                 answer
             }
@@ -34,6 +37,7 @@ impl Solution {
         let mut j;
         let mut skip;
         let mut last_skip_pos= 0;
+        let mut after_skip_pos = 0;
 
         while i < temp.len() {
             skip = false;
@@ -46,6 +50,7 @@ impl Solution {
             }
             if skip {
                 i += skip_pair;
+                after_skip_pos = i;
             }
 
             if i < temp.len() - 1 && temp[0] > temp[i] {
@@ -57,16 +62,23 @@ impl Solution {
             }
 
             if i < temp.len() && temp[0] < temp[i] {
-                if answer[0] == 0 {
-                    answer[0] = i as i32;
+                if answer[0] > 0 {
+                    break;
                 }
+                answer[0] = i as i32;
                 match skip_pair > 0 {
                     true => {
                         counter += skip_pair;
-                        let mut n = i - last_skip_pos;
-                        if n + skip_pair < i {
+                        let mut n = temp[after_skip_pos..=i]
+                            .iter()
+                            .position(|&x| x > temp[last_skip_pos])
+                            .unwrap() + 1;
+                        let larger_pos = last_skip_pos + n;
+
+                        if n + skip_pair < larger_pos {
                             skip_pair += 1;
                         }
+
                         while skip_pair > 0 {
                             if answer[last_skip_pos] == 0 {
                                 answer[last_skip_pos] = n as i32;
@@ -108,8 +120,9 @@ fn main() {
     // let temperatures = vec![86, 65, 85, 90, 65, 32, 83, 83, 81, 91, 100];
     // let temperatures = vec![31, 100, 91, 50, 83, 87, 76, 43, 31, 31, 30];
     // let temperatures = vec![95, 86, 74, 74, 30, 71, 76, 84, 67, 38, 42];
-    let temperatures = vec![78, 93, 42, 62, 62, 83, 83, 92, 99, 58];
+    // let temperatures = vec![78, 93, 42, 62, 62, 83, 83, 92, 99, 58];
     // let temperatures = vec![88, 33, 37, 74, 37, 49, 39, 53, 43, 43];
+    let temperatures = vec![91, 62, 94, 84, 36, 43, 65, 85, 85, 61, 99];
     // let mut temperatures = vec![99; 100000];
     // temperatures[99999] = 100;
     println!("temperatures = {:?}", temperatures);
@@ -125,8 +138,9 @@ fn main() {
     // assert_eq!(solution, vec![3, 1, 1, 6, 2, 1, 3, 2, 1, 1, 0]);
     // assert_eq!(solution, vec![1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0]);
     // assert_eq!(solution, vec![0, 0, 4, 3, 1, 1, 1, 0, 0, 1, 0]);
-    assert_eq!(solution, vec![1, 7, 1, 2, 1, 2, 1, 1, 0, 0]);
+    // assert_eq!(solution, vec![1, 7, 1, 2, 1, 2, 1, 1, 0, 0]);
     // assert_eq!(solution, vec![0, 1, 1, 0, 1, 2, 1, 0, 0, 0]);
+    assert_eq!(solution, vec![2, 1, 8, 4, 1, 1, 1, 3, 2, 1, 0]);
     // assert_eq!(solution, naive_solution);
 
     // let dist = Uniform::new_inclusive(30, 100);
@@ -135,8 +149,8 @@ fn main() {
     //     if i % 10 == 0 {
     //         println!("step = {}", i);
     //     }
-    //     let temperatures: Vec<_> = (1..=10000).map(|_| dist.sample(&mut rng)).collect();
-    //     // println!("temperatures = {:?}", temperatures);
+    //     let temperatures: Vec<_> = (1..=11).map(|_| dist.sample(&mut rng)).collect();
+    //     println!("temperatures = {:?}", temperatures);
     //     let solution = Solution::daily_temperatures(temperatures.clone());
     //     // println!("solution: {:?}", solution);
     //     let naive_solution = naive_daily_temperatures(temperatures);
