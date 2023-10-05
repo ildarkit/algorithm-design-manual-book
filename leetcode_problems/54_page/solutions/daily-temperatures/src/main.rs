@@ -20,7 +20,7 @@ impl Solution {
                         break;
                     }
                     i += c;
-                    while answer[i] > 0 {
+                    while i < temp.len() - 1 && answer[i] > 0 {
                         i += 1;
                     }
                 }
@@ -33,7 +33,7 @@ impl Solution {
         let mut i = 1;
         let mut counter = 1;
         let mut c;
-        let mut skip_pair= 0;
+        let mut skip_step = 0;
         let mut j;
         let mut skip;
         let mut last_skip_pos= 0;
@@ -43,16 +43,18 @@ impl Solution {
             skip = false;
             j = i;
             while j < temp.len() && temp[j - 1] == temp[j] {
-                skip_pair += 1;
+                skip_step += 1;
                 last_skip_pos = j;
                 j += 1;
                 skip = true;
             }
             if skip {
-                i += skip_pair;
+                i += skip_step;
                 after_skip_pos = i;
+                counter += skip_step;
             }
 
+            c = 0;
             if i < temp.len() - 1 && temp[0] > temp[i] {
                 c = Self::sub_interval(&temp[i..], &mut answer[i..]);
                 i += c;
@@ -61,38 +63,56 @@ impl Solution {
                 }
             }
 
-            if i < temp.len() && temp[0] < temp[i] {
-                if answer[0] > 0 {
-                    break;
-                }
-                answer[0] = i as i32;
-                match skip_pair > 0 {
-                    true => {
-                        counter += skip_pair;
-                        let mut n = temp[after_skip_pos..=i]
-                            .iter()
-                            .position(|&x| x > temp[last_skip_pos])
-                            .unwrap() + 1;
-                        let larger_pos = last_skip_pos + n;
+            if i < temp.len() && skip_step > 0 {
+                if temp[last_skip_pos] < temp[i] {
+                    let mut n = temp[after_skip_pos..=i]
+                        .iter()
+                        .position(|&x| x > temp[last_skip_pos])
+                        .unwrap() + 1;
+                    let larger_pos = last_skip_pos + n;
 
-                        if n + skip_pair < larger_pos {
-                            skip_pair += 1;
-                        }
-
-                        while skip_pair > 0 {
-                            if answer[last_skip_pos] == 0 {
-                                answer[last_skip_pos] = n as i32;
-                            }
-                            skip_pair -= 1;
-                            last_skip_pos -= 1;
-                            n += 1;
-                        }
+                    if n + skip_step < larger_pos {
+                        skip_step += 1;
                     }
-                    false => {},
+
+                    while skip_step > 0 {
+                        if answer[last_skip_pos] == 0 {
+                            answer[last_skip_pos] = n as i32;
+                        }
+                        skip_step -= 1;
+                        last_skip_pos -= 1;
+                        n += 1;
+                    }
+                }
+                let mut incremented_step = false;
+                while i < temp.len() - 1 && temp[last_skip_pos] == temp[i] {
+                    skip_step += i - last_skip_pos;
+                    last_skip_pos = i;
+                    after_skip_pos = i + 1;
+                    i += 1;
+                    incremented_step = true;
+                }
+                if incremented_step {
+                    i -= 1;
+                }
+                c = 0;
+            }
+
+            if i < temp.len() && temp[0] < temp[i] {
+                if answer[0] == 0 {
+                    answer[0] = i as i32;
+                }
+                while i < temp.len() - 1 && temp[i] < temp[i + 1] {
+                    if answer[i] == 0 {
+                        answer[i] = 1;
+                    }
+                    i += 1;
                 }
                 break;
             }
-            i += 1;
+            if c == 0 {
+                i += 1;
+            }
         }
         counter
     }
@@ -122,7 +142,14 @@ fn main() {
     // let temperatures = vec![95, 86, 74, 74, 30, 71, 76, 84, 67, 38, 42];
     // let temperatures = vec![78, 93, 42, 62, 62, 83, 83, 92, 99, 58];
     // let temperatures = vec![88, 33, 37, 74, 37, 49, 39, 53, 43, 43];
-    let temperatures = vec![91, 62, 94, 84, 36, 43, 65, 85, 85, 61, 99];
+    // let temperatures = vec![91, 62, 94, 84, 36, 43, 65, 85, 85, 61, 99];
+    // let temperatures = vec![34, 85, 91, 46, 40, 79, 53, 62, 62, 84, 72];
+    // let temperatures = vec![50, 94, 48, 98, 98, 64, 98, 33, 47, 99, 95];
+    // let temperatures = vec![87, 47, 77, 70, 70, 69, 49, 35, 70, 99, 59];
+    // let temperatures = vec![87, 98, 98, 67, 94, 41, 41, 65, 85, 53, 58];
+    // let temperatures = vec![78, 78, 78, 59, 55, 59, 59, 55, 37, 45, 93];
+    // let temperatures = vec![100, 73, 63, 95, 42, 42, 40, 42, 42, 31, 58];
+    let temperatures = vec![95, 95, 37, 79, 79, 41, 70, 47, 62, 98, 63];
     // let mut temperatures = vec![99; 100000];
     // temperatures[99999] = 100;
     println!("temperatures = {:?}", temperatures);
@@ -140,12 +167,19 @@ fn main() {
     // assert_eq!(solution, vec![0, 0, 4, 3, 1, 1, 1, 0, 0, 1, 0]);
     // assert_eq!(solution, vec![1, 7, 1, 2, 1, 2, 1, 1, 0, 0]);
     // assert_eq!(solution, vec![0, 1, 1, 0, 1, 2, 1, 0, 0, 0]);
-    assert_eq!(solution, vec![2, 1, 8, 4, 1, 1, 1, 3, 2, 1, 0]);
+    // assert_eq!(solution, vec![2, 1, 8, 4, 1, 1, 1, 3, 2, 1, 0]);
+    // assert_eq!(solution, vec![1, 1, 0, 2, 1, 4, 1, 2, 1, 0, 0]);
+    // assert_eq!(solution, vec![1, 2, 1, 6, 5, 1, 3, 1, 1, 0, 0]);
+    // assert_eq!(solution, vec![9, 1, 7, 6, 5, 3, 2, 1, 1, 0, 0]);
+    // assert_eq!(solution, vec![1, 0, 0, 1, 0, 2, 1, 1, 0, 1, 0]);
+    // assert_eq!(solution, vec![10, 9, 8, 7, 1, 5, 4, 3, 1, 1, 0]);
+    // assert_eq!(solution, vec![0, 2, 1, 0, 6, 5, 1, 3, 2, 1, 0]);
+    assert_eq!(solution, vec![9, 8, 1, 6, 5, 1, 3, 1, 1, 0, 0]);
     // assert_eq!(solution, naive_solution);
 
     // let dist = Uniform::new_inclusive(30, 100);
     // let mut rng = rand::thread_rng();
-    // for i in 0..100 {
+    // for i in 0..10000 {
     //     if i % 10 == 0 {
     //         println!("step = {}", i);
     //     }
