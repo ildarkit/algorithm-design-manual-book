@@ -42,11 +42,19 @@ impl Solution {
         while i < temp.len() {
             skip = false;
             j = i;
-            while j < temp.len() && temp[j - 1] == temp[j] {
-                skip_step += 1;
-                last_skip_pos = j;
-                j += 1;
-                skip = true;
+            if temp[last_skip_pos] == temp[j] && temp[j - 1] == temp[j] {
+                while j < temp.len() && temp[j - 1] == temp[j] {
+                    skip_step += 1;
+                    last_skip_pos = j;
+                    j += 1;
+                    skip = true;
+                }
+            } else if temp[j - 1] == temp[j] {
+                c = Self::sub_interval(&temp[(j - 1)..], &mut answer[(j - 1)..]);
+                i += c - 1;
+                if counter == 1 {
+                    counter += c;
+                }
             }
             if skip {
                 i += skip_step;
@@ -132,50 +140,45 @@ pub fn naive_daily_temperatures(temperatures: Vec<i32>) -> Vec<i32> {
 }
 
 fn main() {
-    // let temperatures = vec![77,77,77,77,77,41,77,41,41,77];
-    // let temperatures = vec![73,74,75,71,69,72,76,73];
-    // let temperatures = vec![50, 72, 41, 90, 31, 81, 40, 32, 33, 81, 47];
-    // let temperatures = vec![64, 35, 74, 46, 74, 52, 52, 81, 98, 71, 69];
-    // let temperatures = vec![33, 74, 94, 56, 85, 97, 72, 81, 50, 85, 42];
-    // let temperatures = vec![86, 65, 85, 90, 65, 32, 83, 83, 81, 91, 100];
-    // let temperatures = vec![31, 100, 91, 50, 83, 87, 76, 43, 31, 31, 30];
-    // let temperatures = vec![95, 86, 74, 74, 30, 71, 76, 84, 67, 38, 42];
-    // let temperatures = vec![78, 93, 42, 62, 62, 83, 83, 92, 99, 58];
-    // let temperatures = vec![88, 33, 37, 74, 37, 49, 39, 53, 43, 43];
-    // let temperatures = vec![91, 62, 94, 84, 36, 43, 65, 85, 85, 61, 99];
-    // let temperatures = vec![34, 85, 91, 46, 40, 79, 53, 62, 62, 84, 72];
-    // let temperatures = vec![50, 94, 48, 98, 98, 64, 98, 33, 47, 99, 95];
-    // let temperatures = vec![87, 47, 77, 70, 70, 69, 49, 35, 70, 99, 59];
-    // let temperatures = vec![87, 98, 98, 67, 94, 41, 41, 65, 85, 53, 58];
-    // let temperatures = vec![78, 78, 78, 59, 55, 59, 59, 55, 37, 45, 93];
-    // let temperatures = vec![100, 73, 63, 95, 42, 42, 40, 42, 42, 31, 58];
-    let temperatures = vec![95, 95, 37, 79, 79, 41, 70, 47, 62, 98, 63];
     // let mut temperatures = vec![99; 100000];
     // temperatures[99999] = 100;
+    let temperatures = vec![94, 94, 48, 39, 66, 71, 82, 39, 94, 44, 100];
     println!("temperatures = {:?}", temperatures);
     let solution = Solution::daily_temperatures(temperatures.clone());
     println!("solution: {:?}", solution);
     let naive_solution = naive_daily_temperatures(temperatures);
     println!("naive solution: {:?}", naive_solution);
-    // assert_eq!(solution, vec![0, 0, 0, 0, 0, 1, 0, 2, 1, 0]);
-    // assert_eq!(solution, vec![1, 1, 4, 2, 1, 1, 0, 0]);
-    // assert_eq!(solution, vec![1, 2, 1, 0, 1, 0, 3, 1, 1, 0, 0]);
-    // assert_eq!(solution, vec![2, 1, 5, 1, 3, 2, 1, 1, 0, 0, 0]);
-    // assert_eq!(solution, vec![1, 1, 3, 1, 1, 0, 1, 2, 1, 0, 0]);
-    // assert_eq!(solution, vec![3, 1, 1, 6, 2, 1, 3, 2, 1, 1, 0]);
-    // assert_eq!(solution, vec![1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0]);
-    // assert_eq!(solution, vec![0, 0, 4, 3, 1, 1, 1, 0, 0, 1, 0]);
-    // assert_eq!(solution, vec![1, 7, 1, 2, 1, 2, 1, 1, 0, 0]);
-    // assert_eq!(solution, vec![0, 1, 1, 0, 1, 2, 1, 0, 0, 0]);
-    // assert_eq!(solution, vec![2, 1, 8, 4, 1, 1, 1, 3, 2, 1, 0]);
-    // assert_eq!(solution, vec![1, 1, 0, 2, 1, 4, 1, 2, 1, 0, 0]);
-    // assert_eq!(solution, vec![1, 2, 1, 6, 5, 1, 3, 1, 1, 0, 0]);
-    // assert_eq!(solution, vec![9, 1, 7, 6, 5, 3, 2, 1, 1, 0, 0]);
-    // assert_eq!(solution, vec![1, 0, 0, 1, 0, 2, 1, 1, 0, 1, 0]);
-    // assert_eq!(solution, vec![10, 9, 8, 7, 1, 5, 4, 3, 1, 1, 0]);
-    // assert_eq!(solution, vec![0, 2, 1, 0, 6, 5, 1, 3, 2, 1, 0]);
-    assert_eq!(solution, vec![9, 8, 1, 6, 5, 1, 3, 1, 1, 0, 0]);
-    // assert_eq!(solution, naive_solution);
+    assert_eq!(solution, vec![10, 9, 2, 1, 1, 1, 2, 1, 2, 1, 0]);
+
+    // let temperatures = vec![
+    //     vec![77,77,77,77,77,41,77,41,41,77],
+    //     vec![73,74,75,71,69,72,76,73],
+    //     vec![50, 72, 41, 90, 31, 81, 40, 32, 33, 81, 47],
+    //     vec![64, 35, 74, 46, 74, 52, 52, 81, 98, 71, 69],
+    //     vec![33, 74, 94, 56, 85, 97, 72, 81, 50, 85, 42],
+    //     vec![86, 65, 85, 90, 65, 32, 83, 83, 81, 91, 100],
+    //     vec![31, 100, 91, 50, 83, 87, 76, 43, 31, 31, 30],
+    //     vec![95, 86, 74, 74, 30, 71, 76, 84, 67, 38, 42],
+    //     vec![78, 93, 42, 62, 62, 83, 83, 92, 99, 58],
+    //     vec![88, 33, 37, 74, 37, 49, 39, 53, 43, 43],
+    //     vec![91, 62, 94, 84, 36, 43, 65, 85, 85, 61, 99],
+    //     vec![34, 85, 91, 46, 40, 79, 53, 62, 62, 84, 72],
+    //     vec![50, 94, 48, 98, 98, 64, 98, 33, 47, 99, 95],
+    //     vec![87, 47, 77, 70, 70, 69, 49, 35, 70, 99, 59],
+    //     vec![87, 98, 98, 67, 94, 41, 41, 65, 85, 53, 58],
+    //     vec![78, 78, 78, 59, 55, 59, 59, 55, 37, 45, 93],
+    //     vec![100, 73, 63, 95, 42, 42, 40, 42, 42, 31, 58],
+    //     vec![95, 95, 37, 79, 79, 41, 70, 47, 62, 98, 63],
+    //     vec![94, 94, 48, 39, 66, 71, 82, 39, 94, 44, 100],
+    // ];
+    // for t in temperatures {
+    //     println!("temperatures = {:?}", t);
+    //     let solution = Solution::daily_temperatures(t.clone());
+    //     println!("solution: {:?}", solution);
+    //     let naive_solution = naive_daily_temperatures(t);
+    //     println!("naive solution: {:?}", naive_solution);
+    //     assert_eq!(solution, naive_solution);
+    // }
 
     // let dist = Uniform::new_inclusive(30, 100);
     // let mut rng = rand::thread_rng();
