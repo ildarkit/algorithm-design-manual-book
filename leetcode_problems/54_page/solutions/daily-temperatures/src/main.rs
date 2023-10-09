@@ -11,19 +11,11 @@ impl Solution {
             _ => {
                 let mut answer: Vec<i32> = vec![0; temp.len()]; 
                 let mut i = 0;
-                let mut c;
                 while i < temp.len() - 1 {
-                    c = Self::sub_interval(
+                    i += Self::sub_interval(
                         &temp[i..],
                         &mut answer[i..]
                     );
-                    if c == 0 {
-                        break;
-                    }
-                    i += c;
-                    while i < temp.len() - 1 && answer[i] > 0 {
-                        i += 1;
-                    }
                 }
                 answer
             }
@@ -32,24 +24,16 @@ impl Solution {
 
     fn sub_interval(temp: &[i32], answer: &mut[i32]) -> usize {
         let mut i = 1;
-        let mut counter = 1;
-        let mut c;
         let mut skip_step = 0;
         let mut j;
-        let mut skip;
         let mut last_skip_pos= 0;
         let mut after_skip_pos = 0;
 
         while i < temp.len() {
-            skip = false;
             j = i;
             if j < temp.len() - 1 {
                 if last_skip_pos > 0 && temp[last_skip_pos] != temp[j] && temp[j - 1] == temp[j] {
-                    c = Self::sub_interval(&temp[(j - 1)..], &mut answer[(j - 1)..]);
-                    i += c - 1;
-                    if counter == 1 {
-                        counter += c;
-                    }
+                    i += Self::sub_interval(&temp[(j - 1)..], &mut answer[(j - 1)..]);
                 }
                 else if temp[last_skip_pos] == temp[j] || temp[j - 1] == temp[j] && answer[j] == 0 {
                     let mut pos = match temp[last_skip_pos] == temp[j] {
@@ -60,64 +44,39 @@ impl Solution {
                         skip_step += j - pos;
                         pos = j;
                         j += 1;
-                        skip = true;
+                        i = j;
+                        after_skip_pos = i;
                     }
                     last_skip_pos = pos;
                 }
             }
-            if skip {
-                i = j;
-                after_skip_pos = i;
-                // counter += skip_step - c;
+            if i < temp.len() && temp[0] > temp[i] {
+                i += Self::sub_interval(&temp[i..], &mut answer[i..]);
             }
 
-            c = 0;
-            if i < temp.len() - 1 && temp[0] > temp[i] {
-                c = Self::sub_interval(&temp[i..], &mut answer[i..]);
-                i += c;
-                if counter == 1 {
-                    counter += c;
-                }
-            }
+            if i < temp.len() && skip_step > 0 && temp[last_skip_pos] < temp[i] {
+                let mut n = temp[after_skip_pos..=i]
+                    .iter()
+                    .position(|&x| x > temp[last_skip_pos])
+                    .unwrap() + 1;
+                let larger_pos = last_skip_pos + n;
 
-            if i < temp.len() && skip_step > 0 {
-                if temp[last_skip_pos] < temp[i] {
-                    c = 0;
-                    let mut n = temp[after_skip_pos..=i]
-                        .iter()
-                        .position(|&x| x > temp[last_skip_pos])
-                        .unwrap() + 1;
-                    let larger_pos = last_skip_pos + n;
-
-                    if n + skip_step < larger_pos {
-                        skip_step += 1;
-                    }
-                    let before_skip_step = larger_pos - skip_step - 1;
-                    if last_skip_pos - skip_step >= before_skip_step {
-                        skip_step += before_skip_step;
-                    }
-
-                    let mut k = last_skip_pos;
-                    while skip_step > 0 {
-                        if answer[k] == 0 && temp[k] == temp[last_skip_pos] {
-                            answer[k] = n as i32;
-                        }
-                        skip_step -= 1;
-                        k -= 1;
-                        n += 1;
-                    }
+                if n + skip_step < larger_pos {
+                    skip_step += 1;
                 }
-                let mut incremented_step = false;
-                while i < temp.len() - 1 && temp[last_skip_pos] == temp[i] {
-                    skip_step += i - last_skip_pos;
-                    last_skip_pos = i;
-                    after_skip_pos = i + 1;
-                    i += 1;
-                    incremented_step = true;
+                let before_skip_step = larger_pos - skip_step - 1;
+                if last_skip_pos - skip_step >= before_skip_step {
+                    skip_step += before_skip_step;
                 }
-                if incremented_step {
-                    i -= 1;
-                    c = 0;
+
+                let mut k = last_skip_pos;
+                while skip_step > 0 {
+                    if answer[k] == 0 && temp[k] == temp[last_skip_pos] {
+                        answer[k] = n as i32;
+                    }
+                    skip_step -= 1;
+                    k -= 1;
+                    n += 1;
                 }
             }
 
@@ -125,20 +84,14 @@ impl Solution {
                 if answer[0] == 0 {
                     answer[0] = i as i32;
                 }
-                counter = i;
-                while i < temp.len() - 1 && temp[i] < temp[i + 1] {
-                    if answer[i] == 0 {
-                        answer[i] = 1;
-                    }
-                    i += 1;
-                }
                 break;
             }
-            if c == 0 {
-                i += 1;
+
+            if i == temp.len() - 1 && temp[0] == temp[i] {
+                break;
             }
         }
-        counter
+        i
     }
 }
 
@@ -156,15 +109,15 @@ pub fn naive_daily_temperatures(temperatures: Vec<i32>) -> Vec<i32> {
 }
 
 fn main() {
-    // let mut temperatures = vec![99; 100000];
-    // temperatures[99999] = 100;
+    // // let mut temperatures = vec![99; 100000];
+    // // temperatures[99999] = 100;
+    // let temperatures = vec![87, 47, 77, 70, 70, 69, 49, 35, 70, 99, 59];
     // println!("temperatures = {:?}", temperatures);
-    let temperatures = vec![95, 95, 37, 79, 79, 41, 70, 47, 62, 98, 63];
-    let solution = Solution::daily_temperatures(temperatures.clone());
-    println!("solution: {:?}", solution);
-    let naive_solution = naive_daily_temperatures(temperatures);
-    println!("naive solution: {:?}", naive_solution);
-    assert_eq!(solution, naive_solution);
+    // let solution = Solution::daily_temperatures(temperatures.clone());
+    // println!("solution: {:?}", solution);
+    // let naive_solution = naive_daily_temperatures(temperatures);
+    // println!("naive solution: {:?}", naive_solution);
+    // assert_eq!(solution, naive_solution);
 
     // let temperatures = vec![
     //     vec![77,77,77,77,77,41,77,41,41,77],
@@ -202,21 +155,21 @@ fn main() {
     //     assert_eq!(solution, naive_solution);
     // }
 
-    // let dist = Uniform::new_inclusive(30, 100);
-    // let mut rng = rand::thread_rng();
-    // for i in 0..10 {
-    //     // if i % 10 == 0 {
-    //     //     println!("step = {}", i);
-    //     // }
-    //     println!("step = {}", i);
-    //     let temperatures: Vec<_> = (1..=1000).map(|_| dist.sample(&mut rng)).collect();
-    //     // println!("temperatures = {:?}", temperatures);
-    //     let duration = Instant::now();
-    //     // let solution = Solution::daily_temperatures(temperatures.clone());
-    //     // println!("solution: {:?}", solution);
-    //     let naive_solution = naive_daily_temperatures(temperatures);
-    //     // println!("naive solution: {:?}", naive_solution);
-    //     println!("Time elapsed = {} micros", duration.elapsed().as_micros());
-    //     // assert_eq!(solution, naive_solution);
-    // }
+    let dist = Uniform::new_inclusive(30, 100);
+    let mut rng = rand::thread_rng();
+    for i in 0..100 {
+        if i % 10 == 0 {
+            println!("step = {}", i);
+        }
+        // println!("step = {}", i);
+        let temperatures: Vec<_> = (1..=30000).map(|_| dist.sample(&mut rng)).collect();
+        // println!("temperatures = {:?}", temperatures);
+        // let duration = Instant::now();
+        let solution = Solution::daily_temperatures(temperatures.clone());
+        // println!("solution: {:?}", solution);
+        let naive_solution = naive_daily_temperatures(temperatures);
+        // println!("naive solution: {:?}", naive_solution);
+        // println!("Time elapsed = {} ms", duration.elapsed().as_millis());
+        assert_eq!(solution, naive_solution);
+    }
 }
