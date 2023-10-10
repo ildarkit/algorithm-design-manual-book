@@ -25,31 +25,30 @@ impl Solution {
     fn sub_interval(temp: &[i32], answer: &mut[i32]) -> usize {
         let mut i = 1;
         let mut skip_step = 0;
-        let mut j;
         let mut last_skip_pos= 0;
         let mut after_skip_pos = 0;
 
         while i < temp.len() {
-            j = i;
-            if j < temp.len() - 1 {
-                if last_skip_pos > 0 && temp[last_skip_pos] != temp[j] && temp[j - 1] == temp[j] {
-                    i += Self::sub_interval(&temp[(j - 1)..], &mut answer[(j - 1)..]);
+
+            if i < temp.len() - 1 {
+                if last_skip_pos > 0 && temp[last_skip_pos] != temp[i] && temp[i - 1] == temp[i] {
+                    i += Self::sub_interval(&temp[(i - 1)..], &mut answer[(i - 1)..]);
                 }
-                else if temp[last_skip_pos] == temp[j] || temp[j - 1] == temp[j] && answer[j] == 0 {
-                    let mut pos = match temp[last_skip_pos] == temp[j] {
+                else if temp[last_skip_pos] == temp[i] || temp[i - 1] == temp[i] && answer[i] == 0 {
+                    let mut pos = match temp[last_skip_pos] == temp[i] {
                         true => last_skip_pos,
-                        false => j - 1,
+                        false => i - 1,
                     };
-                    while j < temp.len() && temp[pos] == temp[j] {
-                        skip_step += j - pos;
-                        pos = j;
-                        j += 1;
-                        i = j;
+                    while i < temp.len() && temp[pos] == temp[i] {
+                        skip_step += i - pos;
+                        pos = i;
+                        i += 1;
                         after_skip_pos = i;
                     }
                     last_skip_pos = pos;
                 }
             }
+
             if i < temp.len() && temp[0] > temp[i] {
                 i += Self::sub_interval(&temp[i..], &mut answer[i..]);
             }
@@ -59,14 +58,9 @@ impl Solution {
                     .iter()
                     .position(|&x| x > temp[last_skip_pos])
                     .unwrap() + 1;
-                let larger_pos = last_skip_pos + n;
 
-                if n + skip_step < larger_pos {
+                if n + skip_step < i {
                     skip_step += 1;
-                }
-                let before_skip_step = larger_pos - skip_step - 1;
-                if last_skip_pos - skip_step >= before_skip_step {
-                    skip_step += before_skip_step;
                 }
 
                 let mut k = last_skip_pos;
