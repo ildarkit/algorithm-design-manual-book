@@ -1,43 +1,46 @@
 struct Solution;
 
 impl Solution {
-    pub fn remove_kdigits(mut num: String, k: i32) -> String {
+    pub fn remove_kdigits(num: String, k: i32) -> String {
         if k as usize == num.len() || num.len() == 1 {
             return "0".to_string()
         }
-        let mut result = unsafe {
-            let num_vec = num.as_mut_vec();
-            let mut i = 0;
-            let mut j = 1;
-            let mut count = 0;
-            while count < k as usize {
-                if num_vec[i] < num_vec[j] {
-                    let tmp = num_vec[i];
-                    num_vec[i] = num_vec[j];
-                    num_vec[j] = tmp;
-                }
-
-                if num_vec[i] > num_vec[j] {
-                    if i < num_vec.len() - 2 {
-                        i += 1;
-                        if j < num_vec.len() - 1 {
-                            j += 1;
-                        }
+        let mut result_num = Vec::with_capacity(num.len() - k as usize);
+        let mut i = 0;
+        let mut count = 0;
+        for (j, pair) in num.as_bytes().windows(2).enumerate() {
+            if pair[0] > pair[1] {
+                while let Some(c) = result_num.last() {
+                    if *c > pair[1] && count < k {
+                        result_num.pop();
+                    } else {
+                        break;
                     }
                     count += 1;
-                } else if j < num_vec.len() - 1 {
-                    j += 1;
-                } else {
-                    i += k as usize - count;
-                    count = k as usize;
+                }
+            } else {
+                result_num.push(pair[0]);
+                if j == num.len() - 2 {
+                    result_num.push(pair[1]);
                 }
             }
-            std::str::from_utf8(&num_vec[count..])
-                .unwrap()
-                .chars()
-                .skip_while(|c| *c == '0')
-                .collect::<String>()
-        };
+            if count == k {
+                i = j + 1;
+                break;
+            }
+        }
+        while count < k {
+            result_num.pop();
+            count += 1;
+        }
+        if i > 0 {
+            result_num.extend_from_slice(&num.as_bytes()[i..]);
+        }
+        let mut result = std::str::from_utf8(&result_num[..])
+            .unwrap()
+            .chars()
+            .skip_while(|c| *c == '0')
+            .collect::<String>();
         if result.len() == 0 {
             result.push('0')
         }
