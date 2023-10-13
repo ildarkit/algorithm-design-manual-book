@@ -10,17 +10,14 @@ impl Solution {
             let mut i = 0;
             let mut j = 1;
             let mut count = 0;
-            while count < k {
-                if num_vec[i] == num_vec[j] {
-                    if j < num_vec.len() - 1 {
-                        j += 1;
-                    }
-                } else {
-                    if num_vec[i] < num_vec[j] {
-                        let tmp = num_vec[i];
-                        num_vec[i] = num_vec[j];
-                        num_vec[j] = tmp;
-                    }
+            while count < k as usize {
+                if num_vec[i] < num_vec[j] {
+                    let tmp = num_vec[i];
+                    num_vec[i] = num_vec[j];
+                    num_vec[j] = tmp;
+                }
+
+                if num_vec[i] > num_vec[j] {
                     if i < num_vec.len() - 2 {
                         i += 1;
                         if j < num_vec.len() - 1 {
@@ -28,13 +25,14 @@ impl Solution {
                         }
                     }
                     count += 1;
-                }
-                if j == num_vec.len() - 1 && num_vec[i] == num_vec[j] && count < k {
-                    i += k as usize - count as usize;
-                    count = k;
+                } else if j < num_vec.len() - 1 {
+                    j += 1;
+                } else {
+                    i += k as usize - count;
+                    count = k as usize;
                 }
             }
-            std::str::from_utf8(&num_vec[i..])
+            std::str::from_utf8(&num_vec[count..])
                 .unwrap()
                 .chars()
                 .skip_while(|c| *c == '0')
@@ -48,7 +46,7 @@ impl Solution {
 }
 
 fn main() {
-    let k = 1;
-    let num = String::from("11");
-    assert_eq!(String::from("11"), Solution::remove_kdigits(num, k));
+    let k = 2;
+    let num = String::from("12345");
+    assert_eq!(String::from("123"), Solution::remove_kdigits(num, k));
 }
