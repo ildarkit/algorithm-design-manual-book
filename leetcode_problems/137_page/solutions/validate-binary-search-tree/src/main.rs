@@ -1,5 +1,4 @@
 use std::cell::RefCell;
-use std::collections::VecDeque;
 use std::rc::Rc;
 
 // Definition for a binary tree node.
@@ -47,12 +46,12 @@ impl Solution {
         }
     }
     fn check_bst(tree: Rc<RefCell<TreeNode>>, root_val: i32, is_left_tree: bool) -> bool {
-        let mut queue = VecDeque::new();
+        let mut stack = Vec::new();
         let mut max_val = root_val;
         let mut min_val = root_val;
         let mut next_val = root_val;
-        queue.push_back(tree.clone());
-        while let Some(node) = queue.pop_front() {
+        stack.push(tree.clone());
+        while let Some(node) = stack.pop() {
             if is_left_tree {
                 if min_val < root_val && node.borrow().val < min_val {
                     min_val = root_val;
@@ -79,10 +78,8 @@ impl Solution {
                 {
                     return false;
                 }
-                if is_left_tree {
-                    queue.push_front(left.clone());
-                } else if node.borrow().right.is_none() {
-                    queue.push_front(left.clone());
+                if is_left_tree || node.borrow().right.is_none() {
+                    stack.push(left.clone());
                 }
             } else if node.borrow().right.is_some() {
                 min_val = node.borrow().val;
@@ -99,12 +96,10 @@ impl Solution {
                 if node.borrow().left.is_some() {
                     next_val = node.borrow().val;
                 }
-                if is_left_tree {
-                    queue.push_front(right.clone());
-                } else {
-                    queue.push_front(right.clone());
+                stack.push(right.clone());
+                if !is_left_tree {
                     if let Some(ref left) = node.borrow().left {
-                        queue.push_front(left.clone())
+                        stack.push(left.clone())
                     }
                 }
             } else if node.borrow().left.is_some() {
